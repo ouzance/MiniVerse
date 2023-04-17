@@ -6,6 +6,7 @@ Uzun süre bilgisayar başında vakit geçirdiğimizde bazen oturma poziyonumuzu
 
 ![Ekran görüntüsü 2023-04-16 032758](https://user-images.githubusercontent.com/39683389/232259983-6d012a65-fc69-44ef-b917-8608dbd0e7b4.png)
 
+![Ekran görüntüsü 2023-04-17 235539](https://user-images.githubusercontent.com/39683389/232615976-eb09bc6e-9f20-457c-83d8-08a99883766a.png)
 
 ## Recommended IDE Setup
 
