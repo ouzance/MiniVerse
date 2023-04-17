@@ -11,7 +11,7 @@ function createWindow(): void {
     width: 450,
     height: 650,
     show: false,
-    titleBarStyle: 'hidden',
+    // titleBarStyle: 'hidden',
     // titleBarOverlay: {
     //   color: '#eef2ff',
     //   symbolColor: '#74b1be'
@@ -37,7 +37,13 @@ function createWindow(): void {
     //   sandbox: false
     // }
   })
-  child.loadFile(join(__dirname, '../renderer/index.html'))
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    console.log('url', process.env['ELECTRON_RENDERER_URL'])
+    console.log('if')
+    child.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/break')
+  } else {
+    child.loadFile(join(__dirname, '../renderer/index.html'))
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
