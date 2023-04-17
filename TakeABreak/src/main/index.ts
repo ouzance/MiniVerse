@@ -3,11 +3,15 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-const windows = new Set<BrowserWindow>()
+type WindowType = BrowserWindow | undefined
+
+// const windows = new Set<BrowserWindow>()
+let mainWindow: WindowType
+let breakWindow: WindowType
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 450,
     height: 650,
     show: false,
@@ -26,37 +30,46 @@ function createWindow(): void {
     }
   })
 
-  const child = new BrowserWindow({
-    // parent: mainWindow,
-    autoHideMenuBar: true,
-    // fullscreen: true,
-    show: false,
-    ...(process.platform === 'linux' ? { icon } : {})
-    // webPreferences: {
-    //   preload: join(__dirname, '../preload/index.js'),
-    //   sandbox: false
-    // }
-  })
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    console.log('url', process.env['ELECTRON_RENDERER_URL'])
-    console.log('if')
-    child.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/break')
-  } else {
-    child.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-    windows.add(mainWindow)
+    mainWindow?.show()
   })
 
-  mainWindow.on('closed', () => windows.delete(mainWindow))
-  child.on('closed', () => windows.delete(child))
+  mainWindow.on(
+    'closed',
+    () =>
+      function () {
+        mainWindow = undefined
+      }
+  )
+  breakWindow?.on(
+    'closed',
+    () =>
+      function () {
+        breakWindow = undefined
+      }
+  )
 
   ipcMain.handle('add-new-window', () => {
-    if (child) {
-      child.show()
-      windows.add(child)
+    // if (!breakWindow === undefined) return
+    // breakWindow = new BrowserWindow({
+    //   // parent: mainWindow,
+    //   autoHideMenuBar: true,
+    //   // fullscreen: true,
+    //   show: false,
+    //   ...(process.platform === 'linux' ? { icon } : {}),
+    //   webPreferences: {
+    //     preload: join(__dirname, '../preload/index.js'),
+    //     sandbox: false
+    //   }
+    // })
+    // breakWindow?.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/break')
+    // breakWindow.show()
+    if (!breakWindow) {
+      console.log('und')
+      breakWindow = openWindow()
+      breakWindow.show()
+    } else {
+      breakWindow?.show()
     }
   })
 
@@ -69,6 +82,7 @@ function createWindow(): void {
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    // TODO build alindiginda 'break' sayfasinin calismasi gerekiyor
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
@@ -106,5 +120,44 @@ app.on('window-all-closed', () => {
   }
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+function openWindow(): BrowserWindow {
+  const newWindow = new BrowserWindow({
+    // parent: mainWindow,
+    autoHideMenuBar: true,
+    // fullscreen: true,
+    show: false,
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  })
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    newWindow?.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/break')
+    // TODO build alindiginda 'break' sayfasinin calismasi gerekiyor
+  } else {
+    newWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+
+  // breakWindow?.show()
+
+  // breakWindow.webContents.on('did-finish-load', function () {
+  //   if (typeof callback == 'function') {
+  //     console.log('callback')
+  //     // callback()
+  //   }
+  // })
+
+  // set to null
+  newWindow.on('close', () => {
+    breakWindow = undefined
+  })
+
+  // set to null
+  newWindow.on('closed', () => {
+    breakWindow = undefined
+  })
+
+  return newWindow
+}
