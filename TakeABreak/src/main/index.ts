@@ -39,6 +39,7 @@ function createWindow(): void {
     () =>
       function () {
         mainWindow = undefined
+        breakWindow = undefined
       }
   )
   breakWindow?.on(
@@ -50,22 +51,7 @@ function createWindow(): void {
   )
 
   ipcMain.handle('add-new-window', () => {
-    // if (!breakWindow === undefined) return
-    // breakWindow = new BrowserWindow({
-    //   // parent: mainWindow,
-    //   autoHideMenuBar: true,
-    //   // fullscreen: true,
-    //   show: false,
-    //   ...(process.platform === 'linux' ? { icon } : {}),
-    //   webPreferences: {
-    //     preload: join(__dirname, '../preload/index.js'),
-    //     sandbox: false
-    //   }
-    // })
-    // breakWindow?.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/break')
-    // breakWindow.show()
     if (!breakWindow) {
-      console.log('und')
       breakWindow = openWindow()
       breakWindow.show()
     } else {
@@ -122,9 +108,11 @@ app.on('window-all-closed', () => {
 
 function openWindow(): BrowserWindow {
   const newWindow = new BrowserWindow({
-    // parent: mainWindow,
+    width: 1920,
+    height: 1080,
+    parent: mainWindow,
     autoHideMenuBar: true,
-    // fullscreen: true,
+    fullscreen: true,
     show: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -139,15 +127,6 @@ function openWindow(): BrowserWindow {
   } else {
     newWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
-  // breakWindow?.show()
-
-  // breakWindow.webContents.on('did-finish-load', function () {
-  //   if (typeof callback == 'function') {
-  //     console.log('callback')
-  //     // callback()
-  //   }
-  // })
 
   // set to null
   newWindow.on('close', () => {
